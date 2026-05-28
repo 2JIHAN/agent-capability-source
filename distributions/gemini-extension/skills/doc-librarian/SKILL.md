@@ -17,19 +17,25 @@ You curate. You never move, rename, merge, or rewrite the original documents. Yo
 - `<root>/_chapters/<topic>.md` is a **chapter summary** (Tier 1): a synopsis of that theme's originals, dense enough that a reader usually need not open the originals.
 - Originals (Tier 2) are untouched. A reader drills Tier 0 → Tier 1 → Tier 2 on demand.
 
-## Config
+## Targets and config
 
-Read `.agent/librarian.json` from the project root. If it does not exist, do nothing and report `no_config: nothing to manage`. Do not invent managed roots.
+Decide what to catalog before anything else:
+
+1. **The user named a folder** (or the conversation makes the target obvious) — catalog that folder. No config file is required; use the defaults below. This is the normal manual path.
+2. **No folder named** — read `.agent/librarian.json` from the project root and catalog its `managed_roots`. This is the path the SessionStart scan uses when it wakes you.
+3. **Neither a named folder nor a config** — do not scan the whole repo. Default to `docs/` if it exists; otherwise ask the user which folder to catalog.
+
+The config file is optional. It exists only to tell the SessionStart scan which roots to auto-watch and to override the defaults. Manual invocation never needs it.
 
 ```json
 {
-  "managed_roots": ["docs", ".claude/handoffs"],
+  "managed_roots": ["docs"],
   "chapter_threshold_bytes": 8192,
   "chapter_min_docs": 3
 }
 ```
 
-- `managed_roots` — folders to catalog. Each is its own library.
+- `managed_roots` — folders the scan auto-watches. Each is its own library.
 - `chapter_threshold_bytes` (default 8192) — a library whose total original bytes stay under this needs no catalog; leave it flat.
 - `chapter_min_docs` (default 3) — do not split a library into chapters until it holds at least this many originals.
 
@@ -39,7 +45,7 @@ The threshold and count are **engage gates**, not the grouping rule. They decide
 
 ### Phase 1 — Survey
 
-For each managed root, measure with shell (no guessing):
+For each target root (from "Targets and config" above), measure with shell (no guessing):
 
 ```bash
 root="docs"
@@ -127,4 +133,4 @@ If `INDEX.md` plus the `_chapters/` summaries together exceed `chapter_threshold
 - The only files you create or modify are `<root>/INDEX.md` and files under `<root>/_chapters/`.
 - Preserve the existing taxonomy — file new docs into existing chapters before inventing new ones; do not rename or re-scope established chapters without the user asking.
 - Grouping is by theme read from content, never by folder location or raw file count.
-- If `.agent/librarian.json` is absent, do nothing.
+- A missing `.agent/librarian.json` is not a stop condition for manual runs — only the SessionStart scan no-ops without it. When invoked directly, fall back to the named folder or `docs/`.
