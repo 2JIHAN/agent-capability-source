@@ -14,12 +14,17 @@ jihan-agent-source/
 │   │   ├── verifier-on-sandbox.md
 │   │   ├── notion-doc-verifier.md
 │   │   ├── notion-verifier-gui.md
-│   │   └── notion-verifier-concept.md
-│   └── skills/
-│       ├── general-doc-rules/SKILL.md
-│       └── method-doc-rules/SKILL.md
+│   │   ├── notion-verifier-concept.md
+│   │   └── doc-librarian.md
+│   ├── skills/
+│   │   ├── general-doc-rules/SKILL.md
+│   │   └── method-doc-rules/SKILL.md
+│   ├── hooks/
+│   │   └── librarian-hooks.json         # doc-librarian SessionStart 스캔 (Claude Code 전용)
+│   └── scripts/
+│       └── librarian-scan.sh            # 도구 중립 스캔 (hook 이 호출)
 ├── plugins/
-│   └── jihan-agents/                    # Claude Code 통합 플러그인 (5 agents + 2 skills)
+│   └── jihan-agents/                    # Claude Code 통합 플러그인 (6 agents + 2 skills + librarian hook)
 ├── distributions/
 │   ├── opencode-plugin/                 # OpenCode 배포물
 │   ├── gemini-extension/                # Gemini CLI 익스텐션 (agents → user-invokable skills 로 변환)
@@ -42,6 +47,17 @@ jihan-agent-source/
 | `notion-doc-verifier`       | agent | Notion how-to 문서 종합 검증 오케스트레이터. 블록을 CLI/GUI/concept lane 으로 분기하고 인라인 코멘트로 피드백 |
 | `notion-verifier-gui`       | agent | GUI lane. 문서가 참조하는 공개 URL 가용성과 UI 라벨을 ghostdesk + WebFetch 로 확인              |
 | `notion-verifier-concept`   | agent | Concept lane. 죽은 링크, 누락 단계, 모호한 지시, 출처와의 사실 불일치 검토                          |
+| `doc-librarian`             | agent | 쌓인 markdown 을 주제별로 묶어 목차(INDEX)+챕터 요약 오버레이로 정리. 원문은 안 건드림                |
+
+`doc-librarian` 은 프로젝트 루트 `.agent/librarian.json` 에 관리 대상 폴더(`managed_roots`)와 임계값(`chapter_threshold_bytes` 기본 8192, `chapter_min_docs` 기본 3)을 선언한다. Claude Code 에서는 SessionStart 스캔 hook 이 임계 초과나 INDEX 보다 새로운 문서를 감지해 정리 시점을 알려준다. 설정 파일이 없으면 hook 은 아무 동작도 하지 않는다. hook 은 Claude Code 전용이고, 다른 도구에서는 사서를 수동 호출하면 같은 정리를 수행한다.
+
+```json
+{
+  "managed_roots": ["docs"],
+  "chapter_threshold_bytes": 8192,
+  "chapter_min_docs": 3
+}
+```
 
 ## Claude Code 설치
 

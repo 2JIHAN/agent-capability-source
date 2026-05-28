@@ -16,6 +16,7 @@ AGENTS=(
   notion-doc-verifier
   notion-verifier-gui
   notion-verifier-concept
+  doc-librarian
 )
 
 SKILLS=(
@@ -38,6 +39,14 @@ for skill in "${SKILLS[@]}"; do
   mkdir -p "$PLUGIN_DIR/skills/$skill"
   cp "$SOURCE_DIR/skills/$skill/SKILL.md" "$PLUGIN_DIR/skills/$skill/SKILL.md"
 done
+
+# doc-librarian SessionStart scan: Claude Code plugin only.
+# Hooks are Claude-Code-specific; other distributions get doc-librarian as a
+# manually-invoked agent/skill without the auto-scan.
+mkdir -p "$PLUGIN_DIR/hooks" "$PLUGIN_DIR/scripts"
+cp "$SOURCE_DIR/hooks/librarian-hooks.json" "$PLUGIN_DIR/hooks/hooks.json"
+cp "$SOURCE_DIR/scripts/librarian-scan.sh" "$PLUGIN_DIR/scripts/librarian-scan.sh"
+chmod +x "$PLUGIN_DIR/scripts/librarian-scan.sh"
 
 # OpenCode distribution: same flat layout under .opencode/.
 mkdir -p \
