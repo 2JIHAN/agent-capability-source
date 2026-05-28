@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "jihan-agents",
-      "description": "Role-based agent suite for documentation lifecycle. Bundles 6 role agents (notion-writer, verifier-on-sandbox, notion-doc-verifier, notion-verifier-gui, notion-verifier-concept, doc-librarian) and 2 skills (general-doc-rules, method-doc-rules) for authoring, verifying, QAing, and cataloging documentation. doc-librarian ships a SessionStart scan hook for tiered doc upkeep.",
+      "description": "Role-based agent suite for documentation lifecycle. Bundles 6 role agents (notion-writer, verifier-on-sandbox, notion-doc-verifier, notion-verifier-gui, notion-verifier-concept, doc-librarian) and 8 skills (general-doc-rules, method-doc-rules, plus the atomic doc-cluster/doc-summarize/doc-index/doc-file/doc-scaffold/doc-tier that doc-librarian orchestrates) for authoring, verifying, QAing, and cataloging documentation. doc-librarian ships a SessionStart scan hook for tiered doc upkeep.",
       "source": "./plugins/jihan-agents"
     }
   ]

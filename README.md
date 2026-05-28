@@ -18,13 +18,19 @@ jihan-agent-source/
 │   │   └── doc-librarian.md
 │   ├── skills/
 │   │   ├── general-doc-rules/SKILL.md
-│   │   └── method-doc-rules/SKILL.md
+│   │   ├── method-doc-rules/SKILL.md
+│   │   ├── doc-cluster/SKILL.md         # 이하 6개 = doc-librarian 이 조립하는 atomic skill
+│   │   ├── doc-summarize/SKILL.md
+│   │   ├── doc-index/SKILL.md
+│   │   ├── doc-file/SKILL.md
+│   │   ├── doc-scaffold/SKILL.md
+│   │   └── doc-tier/SKILL.md
 │   ├── hooks/
 │   │   └── librarian-hooks.json         # doc-librarian SessionStart 스캔 (Claude Code 전용)
 │   └── scripts/
-│       └── librarian-scan.sh            # 도구 중립 스캔 (hook 이 호출)
+│       └── librarian-scan.sh            # 도구 중립 스캔 (doc-scan, hook 이 호출)
 ├── plugins/
-│   └── jihan-agents/                    # Claude Code 통합 플러그인 (6 agents + 2 skills + librarian hook)
+│   └── jihan-agents/                    # Claude Code 통합 플러그인 (6 agents + 8 skills + librarian hook)
 ├── distributions/
 │   ├── opencode-plugin/                 # OpenCode 배포물
 │   ├── gemini-extension/                # Gemini CLI 익스텐션 (agents → user-invokable skills 로 변환)
@@ -47,9 +53,19 @@ jihan-agent-source/
 | `notion-doc-verifier`       | agent | Notion how-to 문서 종합 검증 오케스트레이터. 블록을 CLI/GUI/concept lane 으로 분기하고 인라인 코멘트로 피드백 |
 | `notion-verifier-gui`       | agent | GUI lane. 문서가 참조하는 공개 URL 가용성과 UI 라벨을 ghostdesk + WebFetch 로 확인              |
 | `notion-verifier-concept`   | agent | Concept lane. 죽은 링크, 누락 단계, 모호한 지시, 출처와의 사실 불일치 검토                          |
-| `doc-librarian`             | agent | 쌓인 markdown 을 주제별로 묶어 목차(INDEX)+챕터 요약 오버레이로 정리. 원문은 안 건드림                |
+| `doc-librarian`             | agent | 쌓인 markdown 을 주제별로 묶어 목차(INDEX)+챕터 요약 오버레이로 정리하는 **orchestrator**. 아래 atomic skill 들을 순서대로 조립. 원문은 안 건드림 |
+| `doc-cluster`               | skill | 흩어진 md 를 내용 읽고 주제별로 그룹 (taxonomy 산출, 파일 안 씀)                            |
+| `doc-summarize`             | skill | 한 주제의 문서들을 시놉시스 `_chapters/<topic>.md` 로 요약                              |
+| `doc-index`                 | skill | taxonomy 로 Tier-0 목차 `INDEX.md` 생성/갱신 (기계적)                              |
+| `doc-file`                  | skill | unfiled 문서 1개를 기존 taxonomy 에 편입 (분류 안정성 유지)                             |
+| `doc-scaffold`              | skill | corpus 성격 보고 레퍼런스 폴더골격 (project → history/todo/WIP/handoffs)            |
+| `doc-tier`                  | skill | catalog 가 임계 초과 시 챕터를 상위 parts 로 묶는 재귀 단계                              |
 
-`doc-librarian` 은 프로젝트 루트 `.agent/librarian.json` 에 관리 대상 폴더(`managed_roots`)와 임계값(`chapter_threshold_bytes` 기본 8192, `chapter_min_docs` 기본 3)을 선언한다. Claude Code 에서는 SessionStart 스캔 hook 이 임계 초과나 INDEX 보다 새로운 문서를 감지해 정리 시점을 알려준다. 설정 파일이 없으면 hook 은 아무 동작도 하지 않는다. hook 은 Claude Code 전용이고, 다른 도구에서는 사서를 수동 호출하면 같은 정리를 수행한다.
+### doc-librarian 구조 (OMC 식 조립)
+
+`doc-librarian` 은 monolith 가 아니라 **orchestrator agent + atomic skill** 구성이다. 측정(`librarian-scan.sh`) → 그룹(`doc-cluster` 또는 `doc-file`) → 요약(`doc-summarize`) → 목차(`doc-index`) → 골격(`doc-scaffold`) → 재귀(`doc-tier`) 순으로 필요한 단계만 돈다. 각 skill 은 단일책임이라 단독 호출도 가능하다.
+
+`.agent/librarian.json` 에 관리 대상 폴더(`managed_roots`)와 임계값(`chapter_threshold_bytes` 기본 8192, `chapter_min_docs` 기본 3)을 선언한다. Claude Code 에서는 SessionStart 스캔 hook 이 임계 초과나 INDEX 보다 새로운 문서를 감지해 정리 시점을 알려준다 — config 가 없으면 hook 은 no-op. 수동 호출(`docs 정리해줘`)은 config 없이도 동작하며, 대상은 지정 폴더 → config → `docs/` 순으로 해결한다. hook 은 Claude Code 전용이고 다른 도구에서는 수동 호출만 된다.
 
 ```json
 {

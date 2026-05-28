@@ -22,6 +22,12 @@ AGENTS=(
 SKILLS=(
   general-doc-rules
   method-doc-rules
+  doc-cluster
+  doc-summarize
+  doc-index
+  doc-file
+  doc-scaffold
+  doc-tier
 )
 
 # Claude Code plugin: single bundle, all roles flat under agents/, all skills flat under skills/.
