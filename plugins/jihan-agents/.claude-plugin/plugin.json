@@ -1,7 +1,7 @@
 {
   "name": "jihan-agents",
   "description": "Role-based agent suite for documentation lifecycle. Bundles notion-writer (authoring), verifier-on-sandbox (CLI command verification in disposable Ubuntu Docker), notion-doc-verifier (end-to-end Notion doc QA orchestrator), notion-verifier-gui (public URL + UI label checks), notion-verifier-concept (prose review for dead links, missing steps, factual drift), and doc-librarian (orchestrates accumulated docs into a browse-first tier structure with a SessionStart scan hook). Ships with general-doc-rules and method-doc-rules skills, plus the atomic doc-cluster, doc-summarize, doc-index, doc-file, doc-scaffold, and doc-tier skills that doc-librarian composes.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": {
     "name": "2jihan"
   }

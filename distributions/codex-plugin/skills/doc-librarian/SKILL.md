@@ -28,16 +28,25 @@ Resolve what to catalog before anything else:
 
 A missing `.agent/librarian.json` never stops a manual run — only the scan hook no-ops without it.
 
+## Grill the judgment, automate the mechanical
+
+Cataloging is full of judgment calls the user wants a say in. Operate grill-based: at each **judgment gate** below, present the decision one at a time, lead with your recommended answer, and wait for confirmation before acting. Once a gate is approved, run the **mechanical** steps it unlocks without further prompting.
+
+- **Judgment gates (grill, one at a time, recommend an answer):** the initial theme taxonomy (doc-cluster), creating a *new* chapter (doc-file), the reference skeleton choice (doc-scaffold), grouping chapters into parts (doc-tier), and any proposed move of an existing document.
+- **Mechanical (auto once the gate is approved):** writing chapter summaries (doc-summarize), rebuilding `INDEX.md` (doc-index), filing a doc into an *already-approved existing* chapter.
+
+Do not batch all gates into one prompt. Walk them one at a time, in order, so the user can redirect early decisions before later ones depend on them.
+
 ## Orchestration
 
 For each target root, run the atomic skills in this order. Skip a step when its precondition is not met.
 
 1. **Measure (doc-scan).** Run `librarian-scan.sh` or measure inline: total `*.md` bytes (excluding `INDEX.md` and `_chapters/`) and count. Under `chapter_threshold_bytes` (default 8192) or fewer than `chapter_min_docs` (default 3) → leave the folder flat, report `skipped: under budget`, stop.
-2. **Group.** First catalog (no `INDEX.md`) → invoke **doc-cluster** for the whole folder. Existing catalog with a few loose docs → invoke **doc-file** to slot them into the existing taxonomy. Preserve existing chapter names either way.
-3. **Summarize (doc-summarize).** For every chapter that is new, gained members, or has a member whose mtime is newer than its `_chapters/<topic>.md`, refresh that chapter summary.
-4. **Catalog (doc-index).** Rebuild `<root>/INDEX.md` from the current taxonomy.
-5. **Scaffold (doc-scaffold).** Once the corpus purpose is clear, lay the reference folder skeleton and file new/loose docs into it. Propose — never silently make — moves of existing well-placed docs.
-6. **Recurse (doc-tier).** If `INDEX.md` plus `_chapters/` now exceed `chapter_threshold_bytes`, group chapters into parts.
+2. **Group** *(judgment gate)*. First catalog (no `INDEX.md`) → invoke **doc-cluster**, then present the proposed taxonomy and confirm before writing anything. Existing catalog with a few loose docs → invoke **doc-file**; confirm only the *new* chapters it proposes (placements into existing chapters need no prompt). Preserve existing chapter names either way.
+3. **Summarize (doc-summarize)** *(auto)*. For every chapter that is new, gained members, or has a member whose mtime is newer than its `_chapters/<topic>.md`, refresh that chapter summary.
+4. **Catalog (doc-index)** *(auto)*. Rebuild `<root>/INDEX.md` from the approved taxonomy.
+5. **Scaffold (doc-scaffold)** *(judgment gate)*. Once the corpus purpose is clear, propose the reference skeleton and confirm before creating it. File new/loose docs into it; propose — never silently make — moves of existing well-placed docs.
+6. **Recurse (doc-tier)** *(judgment gate)*. If `INDEX.md` plus `_chapters/` now exceed `chapter_threshold_bytes`, propose the parts grouping and confirm before restructuring.
 
 If nothing is unfiled or stale and the taxonomy already covers the folder, report `up_to_date` and stop.
 
